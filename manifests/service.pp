@@ -5,14 +5,15 @@ class zookeeper::service(
 ){
   require zookeeper::install
 
-  file { '/etc/init/zookeeper':
+  file { '/etc/init/zookeeper.conf':
     ensure  => present,
     content => template('zookeeper/init.zookeeper.erb')
   }
 
   file { '/etc/init.d/zookeeper':
     ensure  => present,
-    content => template('zookeeper/initd.zookeeper.erb')
+    content => template('zookeeper/initd.zookeeper.erb'),
+    mode    => '0755'
   }
 
   service { 'zookeeper':
