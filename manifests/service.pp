@@ -24,7 +24,7 @@ class zookeeper::service(
     require    => [
       Package['zookeeperd'],
       File["${cfg_dir}/zoo.cfg"],
-      File['/etc/init/zookeeper'],
+      File['/etc/init/zookeeper.conf'],
       File['/etc/init.d/zookeeper']
     ]
   }
