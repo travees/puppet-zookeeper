@@ -37,11 +37,13 @@ class zookeeper::install(
 
     exec { 'download-zk-package':
       command => "/usr/bin/wget -O /tmp/zookeeper-${ensure}.tar.gz ${package_mirror}/zookeeper-${ensure}/zookeeper-${ensure}.tar.gz",
+      cwd     => '/tmp',
       creates => "/tmp/zookeeper-${ensure}.tar.gz"
     }
 
     exec { 'install-zk-package':
       command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C ${install_dir}",
+      cwd     => '/tmp',
       creates => $install_dir,
       require => Exec['download-zk-package']
     }
