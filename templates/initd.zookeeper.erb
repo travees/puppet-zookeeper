@@ -1,0 +1,94 @@
+#!/bin/bash
+#
+# zookeeper    Startup script for the zookeeper
+#
+# chkconfig: 2345 90 10
+# description: zookeeper, providing zookeeper
+# pidfile: /var/run/zookeeper.pid
+
+### BEGIN INIT INFO
+# Provides:		zookeeper
+# Required-Start:	$all
+# Required-Stop:	$local_fs
+# Default-Start: 	2 3 4 5
+# Default-Stop: 	0 1 6
+# Short-Description:	zookeeper
+# Description:		zookeeper services.
+### END INIT INFO
+
+# Source function library
+. /lib/lsb/init-functions
+. /etc/zookeeper/profile
+
+prog="zookeeper"
+RETVAL=0
+PIDFILE=/var/run/$prog.pid
+zookeeperd="<%= @install_dir %>/bin/zkServer.sh"
+
+start() {
+	echo -n $"Starting $prog: "
+	cd <%= @install_dir %>
+	nohup su -s /bin/bash zookeeper -c "$zookeeperd" &>>/var/log/zookeeper/service.log &
+
+	RETVAL=$?
+	PID=$!
+	echo $PID > $PIDFILE
+	if [ $RETVAL -eq 0 ]; then
+		touch /var/run/$prog
+		log_success_msg
+	else
+		log_failure_msg
+	fi
+	echo
+	return $RETVAL
+}
+
+stop() {
+	echo -n $"Stopping $prog: "
+	killproc -p $PIDFILE "$zookeeperd"
+	RETVAL=$?
+	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/run/$prog
+	return $RETVAL
+}
+
+### NOT USED
+reload() {
+	echo -n $"Reloading $prog: "
+	killproc -p $PIDFILE "$rundeckd" -HUP
+	RETVAL=$?
+	echo
+	return $RETVAL
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	force-reload)
+		stop
+		start
+		;;
+	restart)
+		stop
+		start
+		;;
+	condrestart)
+		if [ -f /var/run/$prog ]; then
+			stop
+			start
+		fi
+		;;
+	status)
+		status_of_proc -p $PIDFILE $DAEMON $prog
+		RETVAL=$?
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+		RETVAL=1
+esac
+
+exit $RETVAL

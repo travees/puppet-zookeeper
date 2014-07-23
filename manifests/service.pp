@@ -5,6 +5,16 @@ class zookeeper::service(
 ){
   require zookeeper::install
 
+  file { '/etc/init/zookeeper':
+    ensure  => present,
+    content => template('zookeeper/init.zookeeper.erb')
+  }
+
+  file { '/etc/init.d/zookeeper':
+    ensure  => present,
+    content => template('zookeeper/initd.zookeeper.erb')
+  }
+
   service { 'zookeeper':
     ensure     => 'running',
     hasstatus  => true,
@@ -12,7 +22,9 @@ class zookeeper::service(
     enable     => true,
     require    => [
       Package['zookeeperd'],
-      File["${cfg_dir}/zoo.cfg"]
+      File["${cfg_dir}/zoo.cfg"],
+      File['/etc/init/zookeeper'],
+      File['/etc/init.d/zookeeper']
     ]
   }
 }
