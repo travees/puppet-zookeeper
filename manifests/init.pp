@@ -41,11 +41,17 @@ class zookeeper(
   $tracefile_threshold     = 'TRACE',
   $max_allowed_connections = 10,
   $peer_type               = 'UNSET',
+  $install_method    = 'deb',
+  $package_mirror    = 'http://www.mirrorservice.org/sites/ftp.apache.org/zookeeper',
+  $install_dir       = '/opt/zookeeper'
 ) {
 
   anchor { 'zookeeper::start': }->
   class { 'zookeeper::install':
     ensure            => $ensure,
+    install_method    => $install_method,
+    package_mirror    => $package_mirror,
+    install_dir       => $install_dir
     snap_retain_count => $snap_retain_count,
     datastore         => $datastore,
     user              => $user,
