@@ -47,7 +47,10 @@ class zookeeper::install(
     exec { 'install-zk-package':
       command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C ${install_dir}",
       creates => $install_dir,
-      require => Exec['download-zk-package']
+      require => [
+        Exec['download-zk-package'],
+        File[$install_dir]
+      ]
     }
   }
 
