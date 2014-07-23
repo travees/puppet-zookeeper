@@ -62,7 +62,7 @@ class zookeeper::install(
 
   user { 'zookeeper':
     ensure => present,
-    uid    => '107'
+    uid    => '107',
     gid    => '112',
     system => true,
     home   => $install_dir
