@@ -51,7 +51,7 @@ class zookeeper(
     ensure            => $ensure,
     install_method    => $install_method,
     package_mirror    => $package_mirror,
-    install_dir       => $install_dir
+    install_dir       => $install_dir,
     snap_retain_count => $snap_retain_count,
     datastore         => $datastore,
     user              => $user,
