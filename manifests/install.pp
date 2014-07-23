@@ -21,7 +21,7 @@ class zookeeper::install(
   $user              = 'zookeeper',
 ) {
 
-  if ($install_method == 'deb' {
+  if ($install_method == 'deb') {
     package { ['zookeeper']:
       ensure => $ensure
     }
