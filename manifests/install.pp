@@ -54,6 +54,20 @@ class zookeeper::install(
     }
   }
 
+  group { 'zookeeper':
+    ensure => present,
+    gid    => '112',
+    system => true
+  }
+
+  user { 'zookeeper':
+    ensure => present,
+    uid    => '107'
+    gid    => '112',
+    system => true,
+    home   => $install_dir
+  }
+
   # if !$cleanup_count, then ensure this cron is absent.
   if ($snap_retain_count > 0 and $ensure != 'absent') {
     ensure_packages(['cron'])
