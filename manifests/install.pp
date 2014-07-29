@@ -50,7 +50,7 @@ class zookeeper::install(
     }
 
     exec { 'install-zk-package':
-      command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C /opt",
+      command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C /opt && chown -R zookeeper:zookeeper {install_dir}-${ensure}",
       creates => "${install_dir}-${ensure}/zookeeper-${ensure}.jar",
       require => [
         Exec['download-zk-package'],
