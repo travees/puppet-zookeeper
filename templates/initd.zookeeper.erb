@@ -30,7 +30,7 @@ start() {
 	nohup su -s /bin/bash zookeeper -c "$zookeeperd start" &>>/var/log/zookeeper/service.log &
 
 	RETVAL=$?
-	PID=`ps ax | grep java | grep -v grep | awk '{print $1}'`
+	PID=`ps ax | grep -E '[j]ava.*zookeeper.server' | awk '{print $1}'`
 	echo $PID > $PIDFILE
 	if [ $RETVAL -eq 0 ]; then
 		touch /var/run/$prog
@@ -44,19 +44,10 @@ start() {
 
 stop() {
 	echo -n $"Stopping $prog: "
-	killproc -p $PIDFILE "$zookeeperd"
+	nohup su -s /bin/bash zookeeper -c "$zookeeperd stop" &>>/var/log/zookeeper/service.log &
 	RETVAL=$?
 	echo
-	[ $RETVAL -eq 0 ] && rm -f /var/run/$prog
-	return $RETVAL
-}
-
-### NOT USED
-reload() {
-	echo -n $"Reloading $prog: "
-	killproc -p $PIDFILE "$rundeckd" -HUP
-	RETVAL=$?
-	echo
+	[ $RETVAL -eq 0 ] && rm -f /var/run/$prog && rm -f /var/run/$PIDFILE
 	return $RETVAL
 }
 
@@ -67,26 +58,16 @@ case "$1" in
 	stop)
 		stop
 		;;
-	force-reload)
-		stop
-		start
-		;;
 	restart)
 		stop
 		start
-		;;
-	condrestart)
-		if [ -f /var/run/$prog ]; then
-			stop
-			start
-		fi
 		;;
 	status)
 		status_of_proc -p $PIDFILE $DAEMON $prog
 		RETVAL=$?
 		;;
 	*)
-		echo $"Usage: $0 {start|stop|restart|condrestart|status}"
+		echo $"Usage: $0 {start|stop|restart|status}"
 		RETVAL=1
 esac
 
