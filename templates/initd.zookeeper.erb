@@ -30,7 +30,7 @@ start() {
 	nohup su -s /bin/bash zookeeper -c "$zookeeperd start" &>>/var/log/zookeeper/service.log &
 
 	RETVAL=$?
-	PID=$!
+	PID=`ps ax | grep java | grep -v grep | awk '{print $1}'`
 	echo $PID > $PIDFILE
 	if [ $RETVAL -eq 0 ]; then
 		touch /var/run/$prog
