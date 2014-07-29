@@ -18,7 +18,6 @@
 
 # Source function library
 . /lib/lsb/init-functions
-. /etc/zookeeper/profile
 
 prog="zookeeper"
 RETVAL=0
@@ -28,7 +27,7 @@ zookeeperd="<%= @install_dir %>/bin/zkServer.sh"
 start() {
 	echo -n $"Starting $prog: "
 	cd <%= @install_dir %>
-	nohup su -s /bin/bash zookeeper -c "$zookeeperd" &>>/var/log/zookeeper/service.log &
+	nohup su -s /bin/bash zookeeper -c "$zookeeperd start" &>>/var/log/zookeeper/service.log &
 
 	RETVAL=$?
 	PID=$!
