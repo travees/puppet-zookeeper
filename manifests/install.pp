@@ -35,10 +35,6 @@ class zookeeper::install(
       ensure => absent
     }
 
-    file { "${install_dir}-${ensure}":
-      ensure => directory
-    }
-
     file { $install_dir:
       ensure => link,
       target => "${install_dir}-${ensure}"
@@ -50,12 +46,17 @@ class zookeeper::install(
     }
 
     exec { 'install-zk-package':
-      command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C /opt && chown -R zookeeper:zookeeper {install_dir}-${ensure}",
+      command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C /opt",
       creates => "${install_dir}-${ensure}/zookeeper-${ensure}.jar",
       require => [
-        Exec['download-zk-package'],
-        File["${install_dir}-${ensure}"]
+        Exec['download-zk-package']
       ]
+    }
+    
+    file { "${install_dir}-${ensure}":
+      ensure => directory,
+      owner  => 'zookeeper',
+      group  => 'zookeeper'
     }
   }
 
