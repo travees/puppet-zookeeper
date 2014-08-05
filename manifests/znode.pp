@@ -1,4 +1,4 @@
-define zookeeper::znode
+define zookeeper::znode(
   $ensure = '',
   $assosiation = ''
 ) {
