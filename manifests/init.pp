@@ -13,38 +13,34 @@
 #   class { 'zookeeper': }
 #
 class zookeeper(
-  $id          = '1',
-  $datastore   = '/var/lib/zookeeper',
-  # fact from which we get public ip address
-  $client_ip   = $::ipaddress,
-  $client_port = 2181,
-  $log_dir     = '/var/log/zookeeper',
-  $cfg_dir     = '/etc/zookeeper/conf',
-  $user        = 'zookeeper',
-  $group       = 'zookeeper',
-  $java_bin    = '/usr/bin/java',
-  $java_opts   = '',
-  $pid_dir     = '/var/run/zookeeper',
-  $pid_file    = '$PIDDIR/zookeeper.pid',
-  $zoo_main    = 'org.apache.zookeeper.server.quorum.QuorumPeerMain',
-  $lo4j_prop   = 'INFO,ROLLINGFILE',
-  $cleanup_sh  = '/usr/share/zookeeper/bin/zkCleanup.sh',
-  $servers     = [''],
-  $ensure      = present,
-  $snap_count  = 10000,
-  # since zookeeper 3.4, for earlier version cron task might be used
-  $snap_retain_count       = 3,
-  # interval in hours, purging enabled when >= 1
-  $purge_interval          = 0,
-  # log4j properties
-  $rollingfile_threshold   = 'ERROR',
-  $tracefile_threshold     = 'TRACE',
-  $max_allowed_connections = 10,
-  $peer_type               = 'UNSET',
-  $install_method    = 'deb',
-  $package_mirror    = 'http://www.mirrorservice.org/sites/ftp.apache.org/zookeeper',
-  $install_dir       = '/opt/zookeeper'
-) {
+  $id                      = $zookeeper::params::id,
+  $datastore               = $zookeeper::params::datastore,
+  $client_ip               = $zookeeper::params::client_ip,
+  $client_port             = $zookeeper::params::client_port,
+  $log_dir                 = $zookeeper::params::log_dir,
+  $cfg_dir                 = $zookeeper::params::cfg_dir,
+  $user                    = $zookeeper::params::user,
+  $group                   = $zookeeper::params::group,
+  $java_bin                = $zookeeper::params::java_bin,
+  $java_opts               = $zookeeper::params::java_opts,
+  $pid_dir                 = $zookeeper::params::pid_dir,
+  $pid_file                = $zookeeper::params::pid_file,
+  $zoo_main                = $zookeeper::params::zoo_main,
+  $lo4j_prop               = $zookeeper::params::log4j_prop,
+  $cleanup_sh              = $zookeeper::params::cleanup_sh,
+  $servers                 = $zookeeper::params::servers,
+  $ensure                  = $zookeeper::params::ensure,
+  $snap_count              = $zookeeper::params::snap_count,
+  $snap_retain_count       = $zookeeper::params::snap_retain_count,
+  $purge_interval          = $zookeeper::params::purge_interval,
+  $rollingfile_threshold   = $zookeeper::params::rollingfile_threshold,
+  $tracefile_threshold     = $zookeeper::params::tracefile_threshold,
+  $max_allowed_connections = $zookeeper::params::max_allowed_connections,
+  $peer_type               = $zookeeper::params::peer_type,
+  $install_method          = $zookeeper::params::install_type,
+  $package_mirror          = $zookeeper::params::package_mirror,
+  $install_dir             = $zookeeper::params::install_dir
+) inherits zookeeper::params {
 
   anchor { 'zookeeper::start': }->
   class { 'zookeeper::install':

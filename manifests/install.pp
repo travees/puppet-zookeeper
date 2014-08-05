@@ -11,14 +11,14 @@
 # Sample Usage: include zookeeper::install
 #
 class zookeeper::install(
-  $ensure            = present,
-  $install_method    = 'deb',
-  $package_mirror    = 'http://www.mirrorservice.org/sites/ftp.apache.org/zookeeper',
-  $install_dir       = '/opt/zookeeper',
-  $snap_retain_count = 3,
-  $cleanup_sh        = '/usr/lib/zookeeper/bin/zkCleanup.sh',
-  $datastore         = '/var/lib/zookeeper',
-  $user              = 'zookeeper',
+  $ensure            = $zookeeper::ensure,
+  $install_method    = $zookeeper::install_method,
+  $package_mirror    = $zookeeper::package_mirror,
+  $install_dir       = $zookeeper::install_dir,
+  $snap_retain_count = $zookeeper::snap_retain_count,
+  $cleanup_sh        = $zookeeper::cleanup_sh,
+  $datastore         = $zookeeper::datastore,
+  $user              = $zookeeper::user
 ) {
 
   if ($install_method == 'deb') {
@@ -26,7 +26,7 @@ class zookeeper::install(
       ensure => $ensure
     }
 
-    package { ['zookeeperd']: #init.d scripts for zookeeper
+    package { ['zookeeperd']:
       ensure  => $ensure,
       require => Package['zookeeper']
     }

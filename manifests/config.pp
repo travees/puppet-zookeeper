@@ -20,36 +20,32 @@
 # Sample Usage: include zookeeper::config
 #
 class zookeeper::config(
-  $id                    = '1',
-  $datastore             = '/var/lib/zookeeper',
-  $client_ip             = $::ipaddress,
-  $client_port           = 2181,
-  $election_port         = 2888,
-  $leader_port           = 3888,
-  $snap_count            = 10000,
-  $log_dir               = '/var/log/zookeeper',
-  $cfg_dir               = '/etc/zookeeper/conf',
-  $user                  = 'zookeeper',
-  $group                 = 'zookeeper',
-  $java_bin              = '/usr/bin/java',
-  $java_opts             = '',
-  $pid_dir               = '/var/run/zookeeper',
-  $pid_file              = '$PIDDIR/zookeeper.pid',
-  $zoo_main              = 'org.apache.zookeeper.server.quorum.QuorumPeerMain',
-  $log4j_prop            = 'INFO,ROLLINGFILE',
-  $servers               = [''],
-  # since zookeeper 3.4, for earlier version cron task might be used
-  $snap_retain_count     = 3,
-  # interval in hours, purging enabled when >= 1
-  $purge_interval        = 0,
-  # log4j properties
-  $rollingfile_threshold = 'ERROR',
-  $tracefile_threshold   = 'TRACE',
-  $max_allowed_connections = 10,
-  $export_tag              = 'zookeeper',
-  $peer_type               = 'UNSET',
+  $id                      = $zookeeper::id,
+  $datastore               = $zookeeper::datastore,
+  $client_ip               = $zookeeper::client_ip,
+  $client_port             = $zookeeper::client_port,
+  $election_port           = $zookeeper::election_port,
+  $leader_port             = $zookeeper::leader_port,
+  $snap_count              = $zookeeper::snap_count,
+  $log_dir                 = $zookeeper::log_dir,
+  $cfg_dir                 = $zookeeper::cfg_dir,
+  $user                    = $zookeeper::user,
+  $group                   = $zookeeper::group,
+  $java_bin                = $zookeeper::java_bin,
+  $java_opts               = $zookeeper::java_opts,
+  $pid_dir                 = $zookeeper::pid_dir,
+  $pid_file                = $zookeeper::pid_file,
+  $zoo_main                = $zookeeper::zoo_main,
+  $log4j_prop              = $zookeeper::log4j_prop,
+  $servers                 = $zookeeper::servers,
+  $snap_retain_count       = $zookeeper::snap_retain_count,
+  $purge_interval          = $zookeeper::purge_interval,
+  $rollingfile_threshold   = $zookeeper::rollingfile_threshold,
+  $tracefile_threshold     = $zookeeper::tracefile_threshold,
+  $max_allowed_connections = $zookeeper::max_allowed_connections,
+  $export_tag              = $zookeeper::export_tag,
+  $peer_type               = $zookeeper::peer_type
 ) {
-  require zookeeper::install
 
   file { $cfg_dir:
     ensure  => directory,
