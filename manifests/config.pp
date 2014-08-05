@@ -70,16 +70,14 @@ class zookeeper::config(
     mode    => '0644',
     recurse => true,
   }
-  
-  ensure_resource('file', '/var/zookeeper', { ensure => directory, owner => $user, group => $group, mode => '0644' })
 
-  file { '/var/zookeeper/myid':
+  file { "${datastore}/myid":
     ensure  => file,
     content => template('zookeeper/conf/myid.erb'),
     owner   => $user,
     group   => $group,
     mode    => '0644',
-    require => File['/var/zookeeper'],
+    require => File[$datastore],
     notify  => Class['zookeeper::service'],
   }
 
