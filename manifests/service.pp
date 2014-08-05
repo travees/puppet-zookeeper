@@ -4,11 +4,6 @@ class zookeeper::service(
   $cfg_dir = $zookeeper::cfg_dir
 ){
 
-  file { '/etc/init/zookeeper.conf':
-    ensure  => present,
-    content => template('zookeeper/init.zookeeper.erb')
-  }
-
   file { '/etc/init.d/zookeeper':
     ensure  => present,
     content => template('zookeeper/initd.zookeeper.erb'),
@@ -23,7 +18,6 @@ class zookeeper::service(
     require    => [
       Package['zookeeperd'],
       File["${cfg_dir}/zoo.cfg"],
-      File['/etc/init/zookeeper.conf'],
       File['/etc/init.d/zookeeper']
     ]
   }
