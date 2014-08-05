@@ -54,9 +54,10 @@ class zookeeper::install(
     }
     
     file { "${install_dir}-${ensure}":
-      ensure => directory,
-      owner  => 'zookeeper',
-      group  => 'zookeeper'
+      ensure  => directory,
+      recurse => true,
+      owner   => 'zookeeper',
+      group   => 'zookeeper'
     }
   }
 
