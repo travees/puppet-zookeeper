@@ -27,4 +27,5 @@ class zookeeper::params {
   $install_method    = 'deb'
   $package_mirror    = 'http://www.mirrorservice.org/sites/ftp.apache.org/zookeeper'
   $install_dir       = '/opt/zookeeper'
+  $exhibitor_managed = false
 }

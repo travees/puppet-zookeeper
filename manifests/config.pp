@@ -44,7 +44,8 @@ class zookeeper::config(
   $tracefile_threshold     = $zookeeper::tracefile_threshold,
   $max_allowed_connections = $zookeeper::max_allowed_connections,
   $export_tag              = $zookeeper::export_tag,
-  $peer_type               = $zookeeper::peer_type
+  $peer_type               = $zookeeper::peer_type,
+  $exhibitor_managed       = $zookeeper::exhibitor_managed
 ) {
 
   file { $cfg_dir:
@@ -80,13 +81,15 @@ class zookeeper::config(
     require => File[$datastore],
     notify  => Class['zookeeper::service'],
   }
-
-  file { "${cfg_dir}/zoo.cfg":
-    owner   => $user,
-    group   => $group,
-    mode    => '0644',
-    content => template('zookeeper/conf/zoo.cfg.erb'),
-    notify  => Class['zookeeper::service'],
+  
+  if $exhibitor_manaaged {
+    file { "${cfg_dir}/zoo.cfg":
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      content => template('zookeeper/conf/zoo.cfg.erb'),
+      notify  => Class['zookeeper::service'],
+    }
   }
 
   file { "${cfg_dir}/environment":

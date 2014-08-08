@@ -39,7 +39,8 @@ class zookeeper(
   $peer_type               = $zookeeper::params::peer_type,
   $install_method          = $zookeeper::params::install_type,
   $package_mirror          = $zookeeper::params::package_mirror,
-  $install_dir             = $zookeeper::params::install_dir
+  $install_dir             = $zookeeper::params::install_dir,
+  $exhibitor_managed       = $zookeeper::params::exhibitor_managed
 ) inherits zookeeper::params {
 
   anchor { 'zookeeper::start': }->
@@ -75,6 +76,7 @@ class zookeeper(
     tracefile_threshold     => $tracefile_threshold,
     max_allowed_connections => $max_allowed_connections,
     peer_type               => $peer_type,
+    exhibitor_managed       => $exhibitor_managed
   }->
   class { 'zookeeper::service':
     cfg_dir => $cfg_dir,
