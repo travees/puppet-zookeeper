@@ -82,7 +82,7 @@ class zookeeper::config(
     notify  => Class['zookeeper::service'],
   }
   
-  if $exhibitor_manaaged {
+  if $exhibitor_manaaged == 'false' {
     file { "${cfg_dir}/zoo.cfg":
       owner   => $user,
       group   => $group,
