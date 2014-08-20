@@ -63,14 +63,12 @@ class zookeeper::install(
 
   group { 'zookeeper':
     ensure => present,
-    gid    => '212',
     system => true
   }
 
   user { 'zookeeper':
     ensure => present,
-    uid    => '207',
-    gid    => '212',
+    groups => ['zookeeper'],
     system => true,
     home   => $install_dir
   }
