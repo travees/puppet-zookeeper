@@ -81,7 +81,7 @@ class zookeeper::config(
     require => File[$datastore],
     notify  => Class['zookeeper::service'],
   }
-  
+
   if $exhibitor_manaaged == 'false' {
     file { "${cfg_dir}/zoo.cfg":
       owner   => $user,
@@ -93,9 +93,13 @@ class zookeeper::config(
   }
 
   file { "${cfg_dir}/environment":
+    ensure => absent
+  }
+
+  file { "${cfg_dir}/zookeeper-env.sh":
     owner   => $user,
     group   => $group,
-    mode    => '0644',
+    mode    => '0755',
     content => template('zookeeper/conf/environment.erb'),
     notify  => Class['zookeeper::service'],
   }
