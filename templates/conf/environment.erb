@@ -10,4 +10,4 @@ export JAVA=<%= scope.lookupvar('zookeeper::config::java_bin') %>
 export ZOOMAIN="<%= scope.lookupvar('zookeeper::config::zoo_main') %>"
 export ZOO_LOG4J_PROP="<%= scope.lookupvar('zookeeper::config::log4j_prop') %>"
 export JMXLOCALONLY=false
-export JAVA_OPTS="<%= scope.lookupvar('zookeeper::config::java_opts') %>"
+export SERVER_JVMFLAGS="<%= scope.lookupvar('zookeeper::config::java_opts') %>"
