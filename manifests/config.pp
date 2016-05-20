@@ -20,33 +20,56 @@
 # Sample Usage: include zookeeper::config
 #
 class zookeeper::config(
-  $id                      = $zookeeper::id,
-  $datastore               = $zookeeper::datastore,
-  $client_ip               = $zookeeper::client_ip,
-  $client_port             = $zookeeper::client_port,
-  $election_port           = $zookeeper::election_port,
-  $leader_port             = $zookeeper::leader_port,
-  $snap_count              = $zookeeper::snap_count,
-  $log_dir                 = $zookeeper::log_dir,
-  $cfg_dir                 = $zookeeper::cfg_dir,
-  $user                    = $zookeeper::user,
-  $group                   = $zookeeper::group,
-  $java_bin                = $zookeeper::java_bin,
-  $java_opts               = $zookeeper::java_opts,
-  $pid_dir                 = $zookeeper::pid_dir,
-  $pid_file                = $zookeeper::pid_file,
-  $zoo_main                = $zookeeper::zoo_main,
-  $log4j_prop              = $zookeeper::log4j_prop,
-  $servers                 = $zookeeper::servers,
-  $snap_retain_count       = $zookeeper::snap_retain_count,
-  $purge_interval          = $zookeeper::purge_interval,
-  $rollingfile_threshold   = $zookeeper::rollingfile_threshold,
-  $tracefile_threshold     = $zookeeper::tracefile_threshold,
-  $max_allowed_connections = $zookeeper::max_allowed_connections,
-  $export_tag              = $zookeeper::export_tag,
-  $peer_type               = $zookeeper::peer_type,
-  $exhibitor_managed       = $zookeeper::exhibitor_managed
+  $id                      = '1',
+  $datastore               = '/var/lib/zookeeper',
+  $datalogstore            = undef,
+  $initialize_datastore    = false,
+  # use either IP address, or a fact, e.g.: $::ipaddress
+  $client_ip               = undef,
+  $client_port             = 2181,
+  $election_port           = 2888,
+  $leader_port             = 3888,
+  $snap_count              = 10000,
+  $log_dir                 = '/var/log/zookeeper',
+  $cfg_dir                 = '/etc/zookeeper/conf',
+  $user                    = 'zookeeper',
+  $group                   = 'zookeeper',
+  $java_bin                = '/usr/bin/java',
+  $java_opts               = '',
+  $pid_dir                 = '/var/run',
+  $pid_file                = undef,
+  $zoo_main                = 'org.apache.zookeeper.server.quorum.QuorumPeerMain',
+  $log4j_prop              = 'INFO,ROLLINGFILE',
+  $servers                 = [''],
+  $observers               = [''],
+  # since zookeeper 3.4, for earlier version cron task might be used
+  $snap_retain_count       = 3,
+  # interval in hours, purging enabled when >= 1
+  $purge_interval          = 0,
+  # log4j properties
+  $rollingfile_threshold   = 'ERROR',
+  $tracefile_threshold     = 'TRACE',
+  $max_allowed_connections = undef,
+  $export_tag              = 'zookeeper',
+  $peer_type               = 'UNSET',
+  $tick_time               = 2000,
+  $init_limit              = 10,
+  $sync_limit              = 5,
+  $leader                  = true,
+  $min_session_timeout     = undef,
+  $max_session_timeout     = undef,
+  # systemd_unit_want and _after can be overridden to
+  # donate the matching directives in the [Unit] section
+  $systemd_unit_want       = undef,
+  $systemd_unit_after      = 'network.target',
+  $exhibitor_managed       = false
 ) {
+
+  if $pid_file {
+    $pid_path = $pid_file
+  } else {
+    $pid_path = "${pid_dir}/zookeeper.pid"
+  }
 
   file { $cfg_dir:
     ensure  => directory,
@@ -60,7 +83,7 @@ class zookeeper::config(
     ensure  => directory,
     owner   => $user,
     group   => $group,
-    recurse => true,
+    recurse => false,
     mode    => '0644',
   }
 
@@ -69,17 +92,17 @@ class zookeeper::config(
     owner   => $user,
     group   => $group,
     mode    => '0644',
-    recurse => true,
+    recurse => false, # intentionally, puppet run would take too long #41
   }
 
-  file { "${datastore}/myid":
-    ensure  => file,
-    content => template('zookeeper/conf/myid.erb'),
-    owner   => $user,
-    group   => $group,
-    mode    => '0644',
-    require => File[$datastore],
-    notify  => Class['zookeeper::service'],
+  if $datalogstore {
+    file { $datalogstore:
+      ensure  => directory,
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      recurse => false, # intentionally, puppet run would take too long #41
+    }
   }
 
   if $exhibitor_manaaged == 'false' {
@@ -89,6 +112,22 @@ class zookeeper::config(
       mode    => '0644',
       content => template('zookeeper/conf/zoo.cfg.erb'),
       notify  => Class['zookeeper::service'],
+    }
+
+    file { "${datastore}/myid":
+      ensure  => file,
+      content => template('zookeeper/conf/myid.erb'),
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      require => File[$datastore],
+      notify  => Class['zookeeper::service'],
+    }
+
+    file { "${datastore}/myid":
+      ensure  => 'link',
+      target  => "${cfg_dir}/myid",
+      require => File["${cfg_dir}/myid"]
     }
   }
 
@@ -112,11 +151,13 @@ class zookeeper::config(
     notify  => Class['zookeeper::service'],
   }
 
-  # keep track of all hosts in a cluster
-  zookeeper::host { $client_ip:
-    id            => $id,
-    client_ip     => $client_ip,
-    election_port => $election_port,
-    leader_port   => $leader_port,
+  # Initialize the datastore if required
+  if $initialize_datastore {
+    exec { 'initialize_datastore':
+      command => "/usr/bin/zookeeper-server-initialize --myid=${id}",
+      user    => $user,
+      creates => "${datastore}/version-2",
+      require => File[$datastore],
+    }
   }
 }

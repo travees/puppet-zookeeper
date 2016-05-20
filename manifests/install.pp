@@ -6,29 +6,66 @@
 #
 # Actions: None
 #
-# Requires:
 #
-# Sample Usage: include zookeeper::install
+# Should not be included directly
 #
 class zookeeper::install(
-  $ensure            = $zookeeper::ensure,
   $install_method    = $zookeeper::install_method,
-  $package_mirror    = $zookeeper::package_mirror,
-  $install_dir       = $zookeeper::install_dir,
-  $snap_retain_count = $zookeeper::snap_retain_count,
-  $cleanup_sh        = $zookeeper::cleanup_sh,
-  $datastore         = $zookeeper::datastore,
-  $user              = $zookeeper::user
+  $download_url      = 'http://mirror.cogentco.com/pub/apache/zookeeper',
+  $install_dir       = '/opt/zookeeper',
+  $ensure            = present,
+  $snap_retain_count = 3,
+  $cleanup_sh        = '/usr/lib/zookeeper/bin/zkCleanup.sh',
+  $datastore         = '/var/lib/zookeeper',
+  $user              = 'zookeeper',
+  $group             = 'zookeeper',
+  $ensure_account    = present,
+  $service_provider  = 'init.d',
+  $ensure_cron       = true,
+  $service_package   = 'zookeeperd',
+  $packages          = ['zookeeper'],
+  $cdhver            = undef,
+  $install_java      = false,
+  $java_package      = undef,
+  $repo              = undef,
+  $manual_clean      = undef,
 ) {
+  anchor { 'zookeeper::install::begin': }
+  anchor { 'zookeeper::install::end': }
 
-  if ($install_method == 'deb') {
-    package { ['zookeeper']:
-      ensure => $ensure
-    }
+  if ($install_method == 'package') {
+    case $::osfamily {
+      'Debian': {
+        class { 'zookeeper::os::debian':
+          ensure           => $ensure,
+          service_provider => $service_provider,
+          service_package  => $service_package,
+          packages         => $packages,
+          before           => Anchor['zookeeper::install::end'],
+          require          => Anchor['zookeeper::install::begin'],
+          install_java     => $install_java,
+          java_package     => $java_package
+        }
+      }
+      'RedHat': {
+        class { 'zookeeper::repo':
+          source => $repo_source,
+          cdhver => $cdhver,
+          config => $repo
+        }
 
-    package { ['zookeeperd']:
-      ensure  => $ensure,
-      require => Package['zookeeper']
+        class { 'zookeeper::os::redhat':
+          ensure       => $ensure,
+          packages     => $packages,
+          require      => Anchor['zookeeper::install::begin'],
+          before       => Anchor['zookeeper::install::end'],
+          install_java => $install_java,
+          java_package => $java_package
+        }
+      }
+      default: {
+        fail("Module '${module_name}' is not supported on OS: '${::operatingsystem}', family: '${::osfamily}'")
+      }
     }
   } else {
     package { ['zookeeper','zookeeperd']:
@@ -61,29 +98,18 @@ class zookeeper::install(
     }
   }
 
-  group { 'zookeeper':
-    ensure => present,
-    system => true
+
+  class { 'zookeeper::post_install':
+    ensure            => $ensure,
+    ensure_account    => $ensure_account,
+    ensure_cron       => $ensure_cron,
+    user              => $user,
+    group             => $group,
+    datastore         => $datastore,
+    snap_retain_count => $snap_retain_count,
+    cleanup_sh        => $cleanup_sh,
+    manual_clean      => $manual_clean,
+    require           => Anchor['zookeeper::install::end'],
   }
 
-  user { 'zookeeper':
-    ensure => present,
-    groups => ['zookeeper'],
-    system => true,
-    home   => $install_dir
-  }
-
-  # if !$cleanup_count, then ensure this cron is absent.
-  if ($snap_retain_count > 0 and $ensure != 'absent') {
-    ensure_packages(['cron'])
-
-    cron { 'zookeeper-cleanup':
-        ensure  => present,
-        command => "${cleanup_sh} ${datastore} ${snap_retain_count}",
-        hour    => 2,
-        minute  => 42,
-        user    => $user,
-        require => Package['zookeeper'],
-    }
-  }
 }

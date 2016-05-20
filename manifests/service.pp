@@ -1,26 +1,55 @@
 # Class: zookeeper::service
-
+#
+# Should not be included directly
+#
 class zookeeper::service(
-  $cfg_dir = $zookeeper::cfg_dir,
-  $exhibitor_managed = $zookeeper::exhibitor_managed
+  $zoo_dir,
+  $log_dir,
+  $pid_file            = undef,
+  $service_provider    = undef,    # init mechanism
+  $cfg_dir             = '/etc/zookeeper/conf',
+  $service_name        = 'zookeeper',
+  $service_ensure      = 'running',
+  $manage_service      = true,
+  $manage_service_file = true,
+  $user                = 'zookeeper',
+  $group               = 'zookeeper',
+  $zoo_main            = 'org.apache.zookeeper.server.quorum.QuorumPeerMain',
+  $log4j_prop          = 'INFO,ROLLINGFILE'
 ){
 
-  file { '/etc/init.d/zookeeper':
-    ensure  => present,
-    content => template('zookeeper/initd.zookeeper.erb'),
-    mode    => '0755'
-  }
-  
-  if $exhibitor_manaaged == 'false' {
-    service { 'zookeeper':
-      ensure     => 'running',
+
+  if $manage_service == true {
+    if $manage_service_file == true {
+      if $service_provider == 'systemd'  {
+        file { '/usr/lib/systemd/system/zookeeper.service':
+          ensure  => 'present',
+          content => template('zookeeper/zookeeper.service.erb'),
+          } ~>
+          exec { 'systemctl daemon-reload # for zookeeper':
+            refreshonly => true,
+            path        => $::path,
+            notify      => Service[$service_name]
+          }
+        } elsif ( $service_provider == 'init' or $service_provider == 'redhat')  {
+          file {"/etc/init.d/${service_name}":
+            ensure  => present,
+            content => template('zookeeper/zookeeper.init.erb'),
+            mode    => '0755',
+            notify  => Service[$service_name]
+          }
+        }
+    }
+
+    service { $service_name:
+      ensure     => $service_ensure,
       hasstatus  => true,
       hasrestart => true,
+      provider   => $service_provider,
       enable     => true,
       require    => [
-        Package['zookeeperd'],
-        File["${cfg_dir}/zoo.cfg"],
-        File['/etc/init.d/zookeeper']
+        Class['zookeeper::install'],
+        File["${cfg_dir}/zoo.cfg"]
       ]
     }
   }
