@@ -41,16 +41,15 @@ class zookeeper::service(
         }
     }
 
-    service { $service_name:
-      ensure     => $service_ensure,
-      hasstatus  => true,
-      hasrestart => true,
-      provider   => $service_provider,
-      enable     => true,
-      require    => [
-        Class['zookeeper::install'],
-        File["${cfg_dir}/zoo.cfg"]
-      ]
-    }
+  service { $service_name:
+    ensure     => $service_ensure,
+    hasstatus  => true,
+    hasrestart => true,
+    provider   => $service_provider,
+    enable     => true,
+    require    => [
+      Class['::zookeeper::install'],
+      File["${cfg_dir}/zoo.cfg"]
+    ]
   }
 }

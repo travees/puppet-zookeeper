@@ -155,21 +155,22 @@ class zookeeper(
     systemd_unit_after      => $systemd_unit_after,
   }
 
-  class { 'zookeeper::service':
-    cfg_dir             => $cfg_dir,
-    zoo_dir             => $zoo_dir,
-    service_name        => $service_name,
-    service_provider    => $_service_provider,
-    manage_service      => $manage_service,
-    manage_service_file => $_manage_service_file,
-    require             => Class['zookeeper::config'],
-    before              => Anchor['zookeeper::end'],
-    user                => $user,
-    group               => $group,
-    pid_file            => $pid_file,
-    zoo_main            => $zoo_main,
-    log_dir             => $log_dir,
-    log4j_prop          => $log4j_prop
+  if ($manage_service) {
+    class { 'zookeeper::service':
+      cfg_dir             => $cfg_dir,
+      zoo_dir             => $zoo_dir,
+      service_name        => $service_name,
+      service_provider    => $_service_provider,
+      manage_service_file => $_manage_service_file,
+      require             => Class['::zookeeper::config'],
+      before              => Anchor['zookeeper::end'],
+      user                => $user,
+      group               => $group,
+      pid_file            => $pid_file,
+      zoo_main            => $zoo_main,
+      log_dir             => $log_dir,
+      log4j_prop          => $log4j_prop
+    }
   }
   anchor { 'zookeeper::end': }
 
