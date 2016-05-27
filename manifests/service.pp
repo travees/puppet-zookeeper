@@ -3,8 +3,8 @@
 # Should not be included directly
 #
 class zookeeper::service(
-  $zoo_dir,
-  $log_dir,
+  $zoo_dir             = $zookeeper::cfg_dir,
+  $log_dir             = $zookeeper::log_dir,
   $pid_file            = undef,
   $service_provider    = undef,    # init mechanism
   $cfg_dir             = '/etc/zookeeper/conf',
@@ -15,8 +15,9 @@ class zookeeper::service(
   $user                = 'zookeeper',
   $group               = 'zookeeper',
   $zoo_main            = 'org.apache.zookeeper.server.quorum.QuorumPeerMain',
-  $log4j_prop          = 'INFO,ROLLINGFILE'
+  $log4j_prop          = 'INFO,ROLLINGFILE',
 ){
+  require ::zookeeper::install
 
 
   if $manage_service == true {
@@ -50,6 +51,10 @@ class zookeeper::service(
     require    => [
       Class['::zookeeper::install'],
       File["${cfg_dir}/zoo.cfg"]
+    ],
+    subscribe  => [
+      File["${cfg_dir}/myid"], File["${cfg_dir}/zoo.cfg"],
+      File["${cfg_dir}/environment"], File["${cfg_dir}/log4j.properties"],
     ]
   }
 }
