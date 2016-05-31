@@ -31,6 +31,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :snap_retain_count => 0,
       } }
 
@@ -44,6 +45,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :service_package => 'zookeeper-server',
       } }
 
@@ -57,6 +59,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :packages => [ 'zookeeper', 'zookeeper-bin' ],
       } }
 
@@ -69,6 +72,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :ensure => 'absent',
       } }
 
@@ -92,6 +96,7 @@ describe 'zookeeper::install', :type => :class do
     let(:group) { 'zookeeper' }
 
     let(:params) {{
+      :install_method => 'package',
       :snap_retain_count => 1,
     }}
     # ENV variable might contain characters which are not supported
@@ -166,7 +171,7 @@ describe 'zookeeper::install', :type => :class do
           'command'   => '/usr/lib/zookeeper/bin/zkCleanup.sh /var/lib/zookeeper 5',
           'user'      => 'zookeeper',
           'hour'      => '2',
-          'minute'      => '42',
+          'minute'    => '42',
         })
       end
     end
@@ -176,6 +181,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :packages => [ 'zookeeper', 'zookeeper-devel' ],
       } }
 
@@ -188,6 +194,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :ensure => 'absent',
       } }
 
@@ -209,6 +216,7 @@ describe 'zookeeper::install', :type => :class do
       let(:group) { 'zookeeper' }
 
       let(:params) { {
+        :install_method => 'package',
         :install_java => true,
         :java_package => 'java-1.7.0-openjdk',
       } }
@@ -274,5 +282,54 @@ describe 'zookeeper::install', :type => :class do
       it { should_not contain_user('zookeeper') }
     end
   end
+
+  context 'installing from tar archive' do
+    let(:user) { 'zookeeper' }
+    let(:group) { 'zookeeper' }
+    let(:package_dir) { '/tmp/zookeeper' }
+    let(:install_dir) { '/opt/zookeeper' }
+    let(:vers) { '3.4.5' }
+    let(:mirror_url) { 'http://mirror.cogentco.com/pub/apache' }
+    let(:basefilename) { "zookeeper-#{vers}.tar.gz" }
+    let(:package_url) { "#{mirror_url}/zookeeper/zookeeper-#{vers}/zookeeper-#{vers}.tar.gz" }
+    let(:extract_path) { "#{install_dir}-#{vers}" }
+
+    let(:facts) {{
+      :operatingsystem => 'Ubuntu',
+      :osfamily => 'Debian',
+      :lsbdistcodename => 'trusty',
+    }}
+
+    let(:params) { {
+      :install_method => 'tar',
+      :package_dir    => package_dir,
+      :install_dir    => install_dir,
+      :ensure         => vers,
+      :mirror_url     => mirror_url,
+    } }
+
+    it { should contain_file(package_dir).with({
+      :ensure => 'directory',
+      :owner  => user,
+      :group  => group,
+    })}
+    it { should contain_file(extract_path).with({
+      :ensure => 'directory',
+      :owner  => user,
+      :group  => group,
+    })}
+    it { should contain_file(install_dir).with({
+      :ensure => 'link',
+      :target => extract_path,
+    })}
+    it { should contain_archive("#{package_dir}/#{basefilename}").with({
+      :extract_path => extract_path,
+      :source       => package_url,
+      :creates      => "#{extract_path}/conf",
+      :user         => user,
+      :group        => group,
+    })}
+  end
+
 
 end

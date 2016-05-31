@@ -106,7 +106,9 @@ class zookeeper::config(
     }
   }
 
-  if $exhibitor_manaaged == 'false' {
+  if $exhibitor_managed == false {
+    $svc_notify = Class['zookeeper::service']
+
     file { "${cfg_dir}/zoo.cfg":
       owner   => $user,
       group   => $group,
@@ -130,6 +132,8 @@ class zookeeper::config(
       target  => "${cfg_dir}/myid",
       require => File["${cfg_dir}/myid"]
     }
+  } else {
+    $svc_notify = undef
   }
 
   file { "${cfg_dir}/environment":

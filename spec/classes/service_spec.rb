@@ -12,7 +12,6 @@ describe 'zookeeper::service' do
     :log_dir => '/var/log/zookeeper',
   }}
 
-  it { should contain_package('zookeeperd') }
   it { should contain_service('zookeeper').with(
     :ensure => 'running',
     :enable => true
@@ -37,8 +36,6 @@ describe 'zookeeper::service' do
       :log_dir          => '/var/log/zookeeper',
       :service_provider => 'systemd',
     }}
-
-    it { should contain_package('zookeeper') }
 
     it { should contain_file(
       '/usr/lib/systemd/system/zookeeper.service'

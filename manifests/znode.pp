@@ -2,16 +2,18 @@ define zookeeper::znode(
   $ensure = '',
   $assosiation = ''
 ) {
-  
+
+  $znode_check = "/bin/bash -c \"if [[ \\\"$(echo 'stat /${name}' | /opt/zookeeper/bin/zkCli.sh 2>&1 1>/dev/null)\\\" == 'Node does not exist'* ]]; then exit 1; else exit 0; fi\""
+
   if $ensure == 'present' {
     exec { "create znode ${name}":
       command => "/bin/echo \"create /${name} '${assosiation}'\" | ${zookeeper::install_dir}/bin/zkCli.sh",
-      unless  => "/bin/bash -c \"if [[ \\\"`echo 'ls /' | /opt/zookeeper/bin/zkCli.sh | tail -n2 | head -n1`\\\" == *${name}* ]]; then exit 0; else exit 1; fi\""
+      unless  => $znode_check,
     }
   } else {
     exec { "delete znode ${name}":
       command => "/bin/echo \"rmr /${name}\" | ${zookeeper::install_dir}/bin/zkCli.sh",
-      unless  => "/bin/bash -c \"if [[ \\\"`echo 'ls /' | /opt/zookeeper/bin/zkCli.sh | tail -n2 | head -n1`\\\" == *${name}* ]]; then exit 0; else exit 1; fi\""
+      onlyif  => $znode_check,
     }
   }
 }

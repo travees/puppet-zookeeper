@@ -10,9 +10,10 @@
 # Should not be included directly
 #
 class zookeeper::install(
-  $install_method    = $zookeeper::install_method,
-  $download_url      = 'http://mirror.cogentco.com/pub/apache/zookeeper',
+  $install_method    = 'package',
+  $mirror_url        = 'http://mirror.cogentco.com/pub/apache',
   $install_dir       = '/opt/zookeeper',
+  $package_dir       = '/var/tmp/zookeeper',
   $ensure            = present,
   $snap_retain_count = 3,
   $cleanup_sh        = '/usr/lib/zookeeper/bin/zkCleanup.sh',
@@ -34,6 +35,11 @@ class zookeeper::install(
   anchor { 'zookeeper::install::end': }
 
   if ($install_method == 'package') {
+    $clean = $manual_clean
+    $repo_source = is_hash($repo) ? {
+          true  => 'custom',
+          false =>  $repo,
+    }
     case $::osfamily {
       'Debian': {
         class { 'zookeeper::os::debian':
@@ -68,33 +74,69 @@ class zookeeper::install(
       }
     }
   } else {
+    include '::archive'
+
+    $basefilename = "zookeeper-${ensure}.tar.gz"
+    $package_url = "${mirror_url}/zookeeper/zookeeper-${ensure}/${basefilename}"
+    $checksum_url = "http://www-us.apache.org/dist/zookeeper/zookeeper-${ensure}/${basefilename}.sha1"
+    $extract_path = "${install_dir}-${ensure}"
+
+    if ($manual_clean == undef) {
+      $clean = versioncmp($ensure, '3.4') ? {
+        '-1'    => true,
+        default => false,
+      }
+    } else {
+      $clean = $manual_clean
+    }
+
     package { ['zookeeper','zookeeperd']:
       ensure => absent
     }
 
     file { $install_dir:
       ensure => link,
-      target => "${install_dir}-${ensure}"
+      target => $extract_path
     }
 
-    exec { 'download-zk-package':
-      command => "/usr/bin/wget -O /tmp/zookeeper-${ensure}.tar.gz ${package_mirror}/zookeeper-${ensure}/zookeeper-${ensure}.tar.gz",
-      creates => "/tmp/zookeeper-${ensure}.tar.gz"
-    }
-
-    exec { 'install-zk-package':
-      command => "/bin/tar -xvzf /tmp/zookeeper-${ensure}.tar.gz -C /opt",
-      creates => "${install_dir}-${ensure}/zookeeper-${ensure}.jar",
-      require => [
-        Exec['download-zk-package']
-      ]
-    }
-    
-    file { "${install_dir}-${ensure}":
+    file { $package_dir:
       ensure  => directory,
-      recurse => true,
       owner   => 'zookeeper',
-      group   => 'zookeeper'
+      group   => 'zookeeper',
+      require => [
+        Group['zookeeper'],
+        User['zookeeper'],
+      ],
+    }
+
+    file { $extract_path:
+      ensure  => directory,
+      owner   => 'zookeeper',
+      group   => 'zookeeper',
+      require => [
+        Group['zookeeper'],
+        User['zookeeper'],
+      ],
+    }
+
+    archive { "${package_dir}/${basefilename}":
+      ensure          => present,
+      extract         => true,
+      extract_command => 'tar xfz %s --strip-components=1',
+      extract_path    => $extract_path,
+      source          => $package_url,
+      checksum_url    => $checksum_url,
+      checksum_type   => 'sha1',
+      creates         => "${extract_path}/conf",
+      cleanup         => true,
+      user            => 'zookeeper',
+      group           => 'zookeeper',
+      require         => [
+        File[$package_dir],
+        File[$install_dir],
+        Group['zookeeper'],
+        User['zookeeper'],
+      ],
     }
   }
 
@@ -108,7 +150,7 @@ class zookeeper::install(
     datastore         => $datastore,
     snap_retain_count => $snap_retain_count,
     cleanup_sh        => $cleanup_sh,
-    manual_clean      => $manual_clean,
+    manual_clean      => $clean,
     require           => Anchor['zookeeper::install::end'],
   }
 

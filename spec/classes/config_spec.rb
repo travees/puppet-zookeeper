@@ -44,7 +44,7 @@ describe 'zookeeper::config', :type => :class do
       } }
 
       it {
-        should contain_file('/etc/zookeeper/conf/environment').with_content(/ERROR/)
+        should contain_file("#{cfg_dir}/zookeeper-env.sh").with_content(/ZOOCFGDIR/)
       }
 
       it {
@@ -142,7 +142,7 @@ describe 'zookeeper::config', :type => :class do
     let(:user)    { 'zookeeper' }
     let(:group)   { 'zookeeper' }
     let(:cfg_dir) { '/etc/zookeeper/conf' }
-    let(:log_dir) { '/var/lib/zookeeper' }
+    let(:log_dir) { '/var/log/zookeeper' }
     let(:id_file) { '/etc/zookeeper/conf/myid' }
     let(:myid)    { /1/ }
 
@@ -153,17 +153,17 @@ describe 'zookeeper::config', :type => :class do
     # set custom params
     let(:params) { {
       :id      => '2',
-      :user    => 'zoo',
-      :group   => 'zoo',
-      :cfg_dir => '/var/lib/zookeeper/conf',
-      :log_dir => '/var/lib/zookeeper/log',
+      :user    => 'zookeeper',
+      :group   => 'zookeeper',
+      :cfg_dir => '/etc/zookeeper/conf',
+      :log_dir => '/var/log/zookeeper',
     } }
 
-    let(:user)    { 'zoo' }
-    let(:group)   { 'zoo' }
-    let(:cfg_dir) { '/var/lib/zookeeper/conf' }
-    let(:log_dir) { '/var/lib/zookeeper/log' }
-    let(:id_file) { '/var/lib/zookeeper/conf/myid' }
+    let(:user)    { 'zookeeper' }
+    let(:group)   { 'zookeeper' }
+    let(:cfg_dir) { '/etc/zookeeper/conf' }
+    let(:log_dir) { '/var/log/zookeeper' }
+    let(:id_file) { '/etc/zookeeper/conf/myid' }
     let(:myid)    { /2/ }
 
     it_behaves_like 'common', 'Debian', 'wheezy'
