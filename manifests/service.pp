@@ -10,7 +10,6 @@ class zookeeper::service(
   $cfg_dir             = '/etc/zookeeper/conf',
   $service_name        = 'zookeeper',
   $service_ensure      = 'running',
-  $manage_service      = true,
   $manage_service_file = true,
   $user                = 'zookeeper',
   $group               = 'zookeeper',
@@ -19,38 +18,37 @@ class zookeeper::service(
 ){
 
 
-  if $manage_service == true {
-    if $manage_service_file == true {
-      if $service_provider == 'systemd'  {
-        file { '/usr/lib/systemd/system/zookeeper.service':
-          ensure  => 'present',
-          content => template('zookeeper/zookeeper.service.erb'),
-          } ~>
-          exec { 'systemctl daemon-reload # for zookeeper':
-            refreshonly => true,
-            path        => $::path,
-            notify      => Service[$service_name]
-          }
-        } elsif ( $service_provider == 'init' or $service_provider == 'redhat')  {
-          file {"/etc/init.d/${service_name}":
-            ensure  => present,
-            content => template('zookeeper/zookeeper.init.erb'),
-            mode    => '0755',
-            notify  => Service[$service_name]
-          }
+  if $manage_service_file == true {
+    if $service_provider == 'systemd'  {
+      file { '/usr/lib/systemd/system/zookeeper.service':
+        ensure  => 'present',
+        content => template('zookeeper/zookeeper.service.erb'),
+        } ~>
+        exec { 'systemctl daemon-reload # for zookeeper':
+          refreshonly => true,
+          path        => $::path,
+          notify      => Service[$service_name]
         }
-    }
-
-    service { $service_name:
-      ensure     => $service_ensure,
-      hasstatus  => true,
-      hasrestart => true,
-      provider   => $service_provider,
-      enable     => true,
-      require    => [
-        Class['zookeeper::install'],
-        File["${cfg_dir}/zoo.cfg"]
-      ]
-    }
+      } elsif ( $service_provider == 'init' or $service_provider == 'redhat')  {
+        file {"/etc/init.d/${service_name}":
+          ensure  => present,
+          content => template('zookeeper/zookeeper.init.erb'),
+          mode    => '0755',
+          notify  => Service[$service_name]
+        }
+      }
   }
+
+  service { $service_name:
+    ensure     => $service_ensure,
+    hasstatus  => true,
+    hasrestart => true,
+    provider   => $service_provider,
+    enable     => true,
+    require    => [
+      Class['zookeeper::install'],
+      File["${cfg_dir}/zoo.cfg"]
+    ]
+  }
+
 }

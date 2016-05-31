@@ -105,7 +105,9 @@ class zookeeper::config(
     }
   }
 
-  if $exhibitor_manaaged == 'false' {
+  if $exhibitor_managed == false {
+    $svc_notify = Class['zookeeper::service']
+
     file { "${cfg_dir}/zoo.cfg":
       owner   => $user,
       group   => $group,
@@ -124,11 +126,13 @@ class zookeeper::config(
       notify  => Class['zookeeper::service'],
     }
 
-    file { "${datastore}/myid":
+    file { "${cfg_dir}/myid":
       ensure  => 'link',
-      target  => "${cfg_dir}/myid",
-      require => File["${cfg_dir}/myid"]
+      target  => "${datastore}/myid",
+      require => File["${datastore}/myid"]
     }
+  } else {
+    $svc_notify = undef
   }
 
   file { "${cfg_dir}/environment":
@@ -140,7 +144,7 @@ class zookeeper::config(
     group   => $group,
     mode    => '0755',
     content => template('zookeeper/conf/environment.erb'),
-    notify  => Class['zookeeper::service'],
+    notify  => $svc_notify,
   }
 
   file { "${cfg_dir}/log4j.properties":
@@ -148,7 +152,7 @@ class zookeeper::config(
     group   => $group,
     mode    => '0644',
     content => template('zookeeper/conf/log4j.properties.erb'),
-    notify  => Class['zookeeper::service'],
+    notify  => $svc_notify,
   }
 
   # Initialize the datastore if required

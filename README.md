@@ -1,7 +1,6 @@
 #puppet-zookeeper
 
-[![Puppet
-Forge](http://img.shields.io/puppetforge/v/deric/zookeeper.svg)](https://forge.puppetlabs.com/deric/zookeeper) [![Build Status](https://travis-ci.org/deric/puppet-zookeeper.png?branch=master)](https://travis-ci.org/deric/puppet-zookeeper)
+[![Puppet Forge](http://img.shields.io/puppetforge/v/deric/zookeeper.svg)](https://forge.puppetlabs.com/deric/zookeeper) [![Build Status](https://travis-ci.org/deric/puppet-zookeeper.png?branch=master)](https://travis-ci.org/deric/puppet-zookeeper)
 
 A puppet receipt for [Apache Zookeeper](http://zookeeper.apache.org/). ZooKeeper is a high-performance coordination service for maintaining configuration information, naming, providing distributed synchronization, and providing group services.
 
@@ -141,16 +140,18 @@ After=network-online.target
 ##  Parameters
 
    - `id` - cluster-unique zookeeper's instance id (1-255)
-   - `datastore`
-   - `datalogstore` - specifying this configures the `dataLogDir` ZooKeeper config values and allows for transaction logs to be stored in a different location, improving IO performance
-   - `log_dir`
+   - `datastore` - configures the zookeeper `dataDir` config parameter
+   - `datalogstore` - configures the `dataLogDir` ZooKeeper config values and allows for transaction logs to be stored in a different location, improving IO performance
+   - `log_dir` - Sets java property `zookeeper.log.dir`. Passed to java  with `-Dzookeeper.log.dir`
    - `purge_interval` - automatically will delete ZooKeeper logs (available since ZooKeeper 3.4.0)
    - `snap_retain_count` - number of snapshots that will be kept after purging (since ZooKeeper 3.4.0)
    - `min_session_timeout` - the minimum session timeout in milliseconds that the server will allow the client to negotiate. Defaults to 2 times the **tickTime** (since ZooKeeper 3.3.0)
    - `max_session_timeout` - the maximum session timeout in milliseconds that the server will allow the client to negotiate. Defaults to 20 times the **tickTime** (since ZooKeeper 3.3.0)
-   - `manage_service` (default: `true`) whether Puppet should ensure running service
-   - `manage_service_file` when enabled on RHEL 7.0 a systemd config will be managed
-   - `ensure_account` controls whether `zookeeper` user and group will be ensured (set to `false` to disable this feature)
+   - `manage_service` (default: `true`) - whether Puppet should ensure running service
+   - `manage_service_file` - when enabled on RHEL 7.0 a systemd config will be managed
+   - `ensure_account` - controls whether `zookeeper` user and group will be ensured (set to `false` to disable this feature)
+   - `install_method` (default: `package`) - If set to `package` zookeeper will be installed with the appropriate package manager. Otherwise install from tarball.
+   - `mirror_url` - Base URL of Apache mirror to use if `install_method` is not `package`
 
 and many others, see the `init.pp` file for more details.
 
@@ -252,7 +253,7 @@ If you are versioning your puppet conf with git just add it as submodule, from y
 ## Dependencies
 
   * stdlib `> 2.3.3` - function `ensure_resources` is required
-  * datacat - experimental (might be removed in future releases)
+  * archive `>= 0.5.0` - used for tarball installation
 
 ## Supported platforms
 
