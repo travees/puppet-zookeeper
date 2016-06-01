@@ -64,6 +64,7 @@ class zookeeper::config(
   $systemd_unit_after      = 'network.target',
   $exhibitor_managed       = false
 ) {
+  require ::zookeeper::install
 
   if $pid_file {
     $pid_path = $pid_file
@@ -106,14 +107,15 @@ class zookeeper::config(
   }
 
   if $exhibitor_managed == false {
-    $svc_notify = Class['zookeeper::service']
-
-    file { "${cfg_dir}/zoo.cfg":
+    # we should notify Class['::zookeeper::service'] however it's not configured
+    # at this point (first run), so we have to subscribe from service declaration
+    file { "${cfg_dir}/myid":
+      ensure  => file,
+      content => template('zookeeper/conf/myid.erb'),
       owner   => $user,
       group   => $group,
       mode    => '0644',
-      content => template('zookeeper/conf/zoo.cfg.erb'),
-      notify  => Class['zookeeper::service'],
+      require => File[$cfg_dir],
     }
 
     file { "${datastore}/myid":
@@ -131,8 +133,13 @@ class zookeeper::config(
       target  => "${datastore}/myid",
       require => File["${datastore}/myid"]
     }
-  } else {
-    $svc_notify = undef
+
+    file { "${cfg_dir}/zoo.cfg":
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      content => template('zookeeper/conf/zoo.cfg.erb'),
+    }
   }
 
   file { "${cfg_dir}/environment":
@@ -144,7 +151,6 @@ class zookeeper::config(
     group   => $group,
     mode    => '0755',
     content => template('zookeeper/conf/environment.erb'),
-    notify  => $svc_notify,
   }
 
   file { "${cfg_dir}/log4j.properties":
@@ -152,7 +158,6 @@ class zookeeper::config(
     group   => $group,
     mode    => '0644',
     content => template('zookeeper/conf/log4j.properties.erb'),
-    notify  => $svc_notify,
   }
 
   # Initialize the datastore if required
