@@ -1,1 +1,0 @@
-https://github.com/opentable/puppet-zookeeper/compare/77e2a3bf224b6395e37362a699ce7c1cffa7d229...deric:71d7b13a7318811fb99ac71f435d443dc2e58311
