@@ -119,19 +119,9 @@ class zookeeper::config(
     }
 
     file { "${datastore}/myid":
-      ensure  => file,
-      content => template('zookeeper/conf/myid.erb'),
-      owner   => $user,
-      group   => $group,
-      mode    => '0644',
-      require => File[$datastore],
-      notify  => Class['zookeeper::service'],
-    }
-
-    file { "${cfg_dir}/myid":
       ensure  => 'link',
-      target  => "${datastore}/myid",
-      require => File["${datastore}/myid"]
+      target  => "${cfg_dir}/myid",
+      require => File["${cfg_dir}/myid"]
     }
 
     file { "${cfg_dir}/zoo.cfg":

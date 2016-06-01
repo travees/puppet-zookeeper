@@ -32,55 +32,15 @@ class zookeeper::install(
   $manual_clean      = undef,
 ) {
   anchor { 'zookeeper::install::begin': }
-  anchor { 'zookeeper::install::end': }
 
   if ($install_method == 'package') {
+
+    include '::zookeeper::install::package'
     $clean = $manual_clean
-    $repo_source = is_hash($repo) ? {
-          true  => 'custom',
-          false =>  $repo,
-    }
-    case $::osfamily {
-      'Debian': {
-        class { 'zookeeper::os::debian':
-          ensure           => $ensure,
-          service_provider => $service_provider,
-          service_package  => $service_package,
-          packages         => $packages,
-          before           => Anchor['zookeeper::install::end'],
-          require          => Anchor['zookeeper::install::begin'],
-          install_java     => $install_java,
-          java_package     => $java_package
-        }
-      }
-      'RedHat': {
-        class { 'zookeeper::repo':
-          source => $repo_source,
-          cdhver => $cdhver,
-          config => $repo
-        }
 
-        class { 'zookeeper::os::redhat':
-          ensure       => $ensure,
-          packages     => $packages,
-          require      => Anchor['zookeeper::install::begin'],
-          before       => Anchor['zookeeper::install::end'],
-          install_java => $install_java,
-          java_package => $java_package
-        }
-      }
-      default: {
-        fail("Module '${module_name}' is not supported on OS: '${::operatingsystem}', family: '${::osfamily}'")
-      }
-    }
   } else {
-    include '::archive'
 
-    $basefilename = "zookeeper-${ensure}.tar.gz"
-    $package_url = "${mirror_url}/zookeeper/zookeeper-${ensure}/${basefilename}"
-    $checksum_url = "http://www-us.apache.org/dist/zookeeper/zookeeper-${ensure}/${basefilename}.sha1"
-    $extract_path = "${install_dir}-${ensure}"
-
+    include '::zookeeper::install::archive'
     if ($manual_clean == undef) {
       $clean = versioncmp($ensure, '3.4') ? {
         '-1'    => true,
@@ -90,56 +50,9 @@ class zookeeper::install(
       $clean = $manual_clean
     }
 
-    package { ['zookeeper','zookeeperd']:
-      ensure => absent
-    }
-
-    file { $install_dir:
-      ensure => link,
-      target => $extract_path
-    }
-
-    file { $package_dir:
-      ensure  => directory,
-      owner   => 'zookeeper',
-      group   => 'zookeeper',
-      require => [
-        Group['zookeeper'],
-        User['zookeeper'],
-      ],
-    }
-
-    file { $extract_path:
-      ensure  => directory,
-      owner   => 'zookeeper',
-      group   => 'zookeeper',
-      require => [
-        Group['zookeeper'],
-        User['zookeeper'],
-      ],
-    }
-
-    archive { "${package_dir}/${basefilename}":
-      ensure          => present,
-      extract         => true,
-      extract_command => 'tar xfz %s --strip-components=1',
-      extract_path    => $extract_path,
-      source          => $package_url,
-      checksum_url    => $checksum_url,
-      checksum_type   => 'sha1',
-      creates         => "${extract_path}/conf",
-      cleanup         => true,
-      user            => 'zookeeper',
-      group           => 'zookeeper',
-      require         => [
-        File[$package_dir],
-        File[$install_dir],
-        Group['zookeeper'],
-        User['zookeeper'],
-      ],
-    }
   }
 
+  anchor { 'zookeeper::install::end': }
 
   class { 'zookeeper::post_install':
     ensure            => $ensure,

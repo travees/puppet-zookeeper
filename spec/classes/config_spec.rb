@@ -143,7 +143,7 @@ describe 'zookeeper::config', :type => :class do
     let(:group)   { 'zookeeper' }
     let(:cfg_dir) { '/etc/zookeeper/conf' }
     let(:log_dir) { '/var/log/zookeeper' }
-    let(:id_file) { '/var/lib/zookeeper/myid' }
+    let(:id_file) { '/etc/zookeeper/conf/myid' }
     let(:myid)    { /1/ }
 
     it_behaves_like 'common', 'Debian', 'wheezy'
@@ -163,7 +163,7 @@ describe 'zookeeper::config', :type => :class do
     let(:group)   { 'zookeeper' }
     let(:cfg_dir) { '/etc/zookeeper/conf' }
     let(:log_dir) { '/var/log/zookeeper' }
-    let(:id_file) { '/var/lib/zookeeper/myid' }
+    let(:id_file) { '/etc/zookeeper/conf/myid' }
     let(:myid)    { /2/ }
 
     it_behaves_like 'common', 'Debian', 'wheezy'
@@ -171,10 +171,10 @@ describe 'zookeeper::config', :type => :class do
 
   context 'myid link' do
     it { should contain_file(
-      '/etc/zookeeper/conf/myid'
+      '/var/lib/zookeeper/myid'
     ).with({
       'ensure' => 'link',
-      'target' => '/var/lib/zookeeper/myid',
+      'target' => '/etc/zookeeper/conf/myid',
     })}
   end
 
