@@ -77,7 +77,7 @@ class zookeeper::install::archive(
     source          => $package_url,
     checksum_url    => $checksum_url,
     checksum_type   => 'sha1',
-    creates         => "${extract_path}/conf",
+    creates         => "${extract_path}/zookeeper-${ensure}.jar",
     cleanup         => true,
     user            => 'zookeeper',
     group           => 'zookeeper',
