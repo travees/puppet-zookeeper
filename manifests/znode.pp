@@ -3,7 +3,7 @@ define zookeeper::znode(
   $assosiation = ''
 ) {
 
-  $znode_check = "/bin/bash -c \"if [[ \\\"$(echo 'stat /${name}' | /opt/zookeeper/bin/zkCli.sh 2>&1 1>/dev/null)\\\" == 'Node does not exist'* ]]; then exit 1; else exit 0; fi\""
+  $znode_check = "/bin/bash -c \"if [[ \\\"\$(echo 'stat /${name}' | /opt/zookeeper/bin/zkCli.sh 2>&1 1>/dev/null)\\\" == 'Node does not exist'* ]]; then exit 1; else exit 0; fi\""
 
   if $ensure == 'present' {
     exec { "create znode ${name}":
