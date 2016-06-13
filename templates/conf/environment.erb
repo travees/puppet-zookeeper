@@ -1,13 +1,20 @@
-export ZOOCFGDIR=<%= scope.lookupvar('zookeeper::config::cfg_dir') %>
+NAME=zookeeper
+ZOOCFGDIR=<%= @cfg_dir %>
 
 # TODO this is really ugly
 # How to find out, which jars are needed?
 # seems, that log4j requires the log4j.properties file to be in the classpath
 export CLASSPATH="$ZOOCFGDIR:/usr/share/java/jline.jar:/usr/share/java/log4j-1.2.jar:/usr/share/java/xercesImpl.jar:/usr/share/java/xmlParserAPIs.jar:/usr/share/java/netty.jar:/usr/share/java/slf4j-api.jar:/usr/share/java/slf4j-log4j12.jar:/usr/share/java/zookeeper.jar"
 
-export ZOO_LOG_DIR=<%= scope.lookupvar('zookeeper::config::log_dir') %>
-export JAVA=<%= scope.lookupvar('zookeeper::config::java_bin') %>
-export ZOOMAIN="<%= scope.lookupvar('zookeeper::config::zoo_main') %>"
-export ZOO_LOG4J_PROP="<%= scope.lookupvar('zookeeper::config::log4j_prop') %>"
-export JMXLOCALONLY=false
-export SERVER_JVMFLAGS="<%= scope.lookupvar('zookeeper::config::java_opts') %>"
+ZOOCFG="zoo.cfg"
+ZOO_LOG_DIR=<%= @log_dir %>
+USER=<%= @user %>
+GROUP=<%= @group %>
+PIDDIR=<%= @pid_dir %>
+PIDFILE=<%= @pid_path %>
+SCRIPTNAME=/etc/init.d/$NAME
+JAVA=<%= @java_bin %>
+ZOOMAIN="<%= @zoo_main %>"
+ZOO_LOG4J_PROP="<%= @log4j_prop %>"
+JMXLOCALONLY=false
+SERVER_JVMFLAGS="<%= @java_opts %>"

@@ -1,31 +1,56 @@
+# OS specific configuration should be defined here
+#
 class zookeeper::params {
-  
-  $id          = '1'
-  $datastore   = '/var/lib/zookeeper'
-  $client_ip   = $::ipaddress
-  $client_port = 2181
-  $log_dir     = '/var/log/zookeeper'
-  $cfg_dir     = '/etc/zookeeper/conf'
-  $user        = 'zookeeper'
-  $group       = 'zookeeper'
-  $java_bin    = '/usr/bin/java'
-  $java_opts   = ''
-  $pid_dir     = '/var/run/zookeeper'
-  $pid_file    = '$PIDDIR/zookeeper.pid'
-  $zoo_main    = 'org.apache.zookeeper.server.quorum.QuorumPeerMain'
-  $lo4j_prop   = 'INFO,ROLLINGFILE'
-  $cleanup_sh  = '/usr/share/zookeeper/bin/zkCleanup.sh'
-  $servers     = ['']
-  $ensure      = present
-  $snap_count  = 10000
-  $snap_retain_count       = 3
-  $purge_interval          = 0
-  $rollingfile_threshold   = 'ERROR'
-  $tracefile_threshold     = 'TRACE'
-  $max_allowed_connections = 10
-  $peer_type               = 'UNSET'
-  $install_method    = 'deb'
-  $package_mirror    = 'http://www.mirrorservice.org/sites/ftp.apache.org/zookeeper'
-  $install_dir       = '/opt/zookeeper'
-  $exhibitor_managed = false
+  $_defaults = {
+    'packages' => ['zookeeper']
+  }
+
+  case $::osfamily {
+    'Debian': {
+      case $::operatingsystem {
+        'Debian': {
+          case $::majdistrelease {
+            '7': { $initstyle = 'init' }
+            '8': { $initstyle = 'systemd' }
+            default: { $initstyle = undef }
+          }
+        }
+        'Ubuntu': {
+          case $::majdistrelease {
+            '14.04': { $initstyle = 'upstart' }
+            default: { $initstyle = undef }
+          }
+        }
+        default: { $initstyle = undef }
+      }
+
+      $_os_overrides = {
+        'packages'         => ['zookeeper', 'zookeeperd'],
+        'service_name'     => 'zookeeper',
+        'service_provider' => $initstyle,
+      }
+    }
+    'Redhat': {
+      case $::operatingsystemmajrelease {
+        '6': { $initstyle = 'redhat' }
+        '7': { $initstyle = 'systemd' }
+        default: { $initstyle = undef }
+      }
+      $_os_overrides = {
+        'packages'         => ['zookeeper', 'zookeeper-server'],
+        'service_name'     => 'zookeeper-server',
+        'service_provider' => $initstyle,
+      }
+    }
+
+    default: {
+      $_os_overrides = {}
+    }
+  }
+  $_params = merge($_defaults, $_os_overrides)
+
+
+  $packages = $_params['packages']
+  $service_provider = $_params['service_provider']
+  $service_name = $_params['service_name']
 }
