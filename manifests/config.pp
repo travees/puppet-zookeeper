@@ -106,7 +106,14 @@ class zookeeper::config(
     }
   }
 
-  if $exhibitor_managed == false {
+  if $exhibitor_manaaged == 'false' {
+    file { "${cfg_dir}/zoo.cfg":
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      content => template('zookeeper/conf/zoo.cfg.erb'),
+    }
+
     # we should notify Class['::zookeeper::service'] however it's not configured
     # at this point (first run), so we have to subscribe from service declaration
     file { "${cfg_dir}/myid":
