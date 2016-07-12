@@ -155,7 +155,7 @@ class zookeeper(
     systemd_unit_after      => $systemd_unit_after,
   }
 
-  if ($manage_service) {
+  if ($manage_service and !$exhibitor_managed) {
     class { 'zookeeper::service':
       cfg_dir             => $cfg_dir,
       zoo_dir             => $zoo_dir,
