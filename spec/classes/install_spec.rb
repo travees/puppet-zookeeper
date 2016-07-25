@@ -301,34 +301,42 @@ describe 'zookeeper::install', :type => :class do
     }}
 
     let(:params) { {
-      :install_method => 'tar',
+      :install_method => 'archive',
       :package_dir    => package_dir,
       :install_dir    => install_dir,
       :ensure         => vers,
       :mirror_url     => mirror_url,
     } }
 
-    it { should contain_file(package_dir).with({
-      :ensure => 'directory',
-      :owner  => user,
-      :group  => group,
-    })}
-    it { should contain_file(extract_path).with({
-      :ensure => 'directory',
-      :owner  => user,
-      :group  => group,
-    })}
-    it { should contain_file(install_dir).with({
-      :ensure => 'link',
-      :target => extract_path,
-    })}
-    it { should contain_archive("#{package_dir}/#{basefilename}").with({
-      :extract_path => extract_path,
-      :source       => package_url,
-      :creates      => "#{extract_path}/conf",
-      :user         => user,
-      :group        => group,
-    })}
+    it do
+      should contain_file(package_dir).with({
+        :ensure => 'directory',
+        :owner  => user,
+        :group  => group,
+      })
+    end
+    it do
+      should contain_file(extract_path).with({
+        :ensure => 'directory',
+        :owner  => user,
+        :group  => group,
+      })
+    end
+    it do
+      should contain_file(install_dir).with({
+        :ensure => 'link',
+        :target => extract_path,
+      })
+    end
+    it do
+      should contain_archive("#{package_dir}/#{basefilename}").with({
+        :extract_path => extract_path,
+        :source       => package_url,
+        :creates      => "#{extract_path}/conf",
+        :user         => user,
+        :group        => group,
+      })
+    end
   end
 
 
