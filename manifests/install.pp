@@ -12,6 +12,7 @@
 class zookeeper::install(
   $install_method    = 'package',
   $mirror_url        = 'http://mirror.cogentco.com/pub/apache',
+  $archive_checksum  = {},
   $install_dir       = '/opt/zookeeper',
   $package_dir       = '/var/tmp/zookeeper',
   $ensure            = present,
@@ -73,12 +74,11 @@ class zookeeper::install(
         fail("Module '${module_name}' is not supported on OS: '${::operatingsystem}', family: '${::osfamily}'")
       }
     }
-  } else {
+  } elsif ($install_method == 'archive') {
     include '::archive'
 
     $basefilename = "zookeeper-${ensure}.tar.gz"
     $package_url = "${mirror_url}/zookeeper/zookeeper-${ensure}/${basefilename}"
-    $checksum_url = "http://www-us.apache.org/dist/zookeeper/zookeeper-${ensure}/${basefilename}.sha1"
     $extract_path = "${install_dir}-${ensure}"
 
     if ($manual_clean == undef) {
@@ -125,8 +125,8 @@ class zookeeper::install(
       extract_command => 'tar xfz %s --strip-components=1',
       extract_path    => $extract_path,
       source          => $package_url,
-      checksum_url    => $checksum_url,
-      checksum_type   => 'sha1',
+      checksum        => $archive_checksum[hash],
+      checksum_type   => $archive_checksum[type],
       creates         => "${extract_path}/conf",
       cleanup         => true,
       user            => 'zookeeper',
@@ -138,6 +138,8 @@ class zookeeper::install(
         User['zookeeper'],
       ],
     }
+  } else {
+    fail("You must specify a valid install method for zookeeper")
   }
 
 
