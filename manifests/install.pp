@@ -142,6 +142,14 @@ class zookeeper::install(
     fail("You must specify a valid install method for zookeeper")
   }
 
+  file { '/usr/local/bin/znode_exists.sh':
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0755',
+    source  => 'puppet:///modules/zookeeper/znode_exists.sh',
+    require => File['/usr/local/bin'],
+  }
 
   class { 'zookeeper::post_install':
     ensure            => $ensure,

@@ -1,19 +1,39 @@
 define zookeeper::znode(
   $ensure = '',
-  $assosiation = ''
+  $association = ''
 ) {
 
-  $znode_check = "/bin/bash -c \"if [[ \\\"$(echo 'stat /${name}' | /opt/zookeeper/bin/zkCli.sh 2>&1 1>/dev/null)\\\" == 'Node does not exist'* ]]; then exit 1; else exit 0; fi\""
+  validate_re($name, '^\/', "znode path must start with a '/'")
+  if $name =~ /\/\.{1,2}(\/.*)?$/ {
+    fail("znode name cannot be '.' or '..'")
+  }
+
+  $create_cmd = shellquote(
+    '/bin/echo',
+    "create ${name}",
+    "\'${association}\'"
+  )
+
+  $rm_cmd = shellquote(
+    '/bin/echo',
+    "rmr ${name}"
+  )
 
   if $ensure == 'present' {
     exec { "create znode ${name}":
-      command => "/bin/echo \"create /${name} '${assosiation}'\" | ${zookeeper::install_dir}/bin/zkCli.sh",
-      unless  => $znode_check,
+      command => "${create_cmd} | zkCli.sh",
+      unless  => shellquote('znode_exists.sh', $name),
+      path    => "/usr/share/zookeeper/bin:${zookeeper::install_dir}/bin:/bin:/usr/bin:/usr/local/bin",
+      require => Class['::zookeeper::install'],
+                
     }
   } else {
     exec { "delete znode ${name}":
-      command => "/bin/echo \"rmr /${name}\" | ${zookeeper::install_dir}/bin/zkCli.sh",
-      onlyif  => $znode_check,
+      command => "${rm_cmd} | zkCli.sh",
+      onlyif  => shellquote('znode_exists.sh', $name),
+      path    => "/usr/share/zookeeper/bin:${zookeeper::install_dir}/bin:/bin:/usr/bin:/usr/local/bin",
+      require => Class['::zookeeper::install'],
     }
   }
+
 }
