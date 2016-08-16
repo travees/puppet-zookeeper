@@ -53,6 +53,14 @@ class zookeeper::install(
     fail("specify a valid install method for zookeeper")
   }
 
+  file { '/usr/local/bin/znode_exists.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zookeeper/znode_exists.sh',
+  }
+
   anchor { 'zookeeper::install::end': }
 
   class { 'zookeeper::post_install':
