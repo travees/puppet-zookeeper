@@ -63,6 +63,7 @@ class zookeeper::config(
   # donate the matching directives in the [Unit] section
   $systemd_unit_want       = undef,
   $systemd_unit_after      = 'network.target',
+  $exhibitor_managed       = false,
 ) {
   require ::zookeeper::install
 
@@ -100,28 +101,32 @@ class zookeeper::config(
     }
   }
 
-  # we should notify Class['::zookeeper::service'] however it's not configured
-  # at this point (first run), so we have to subscribe from service declaration
-  file { "${cfg_dir}/myid":
-    ensure  => file,
-    content => template('zookeeper/conf/myid.erb'),
-    owner   => $user,
-    group   => $group,
-    mode    => '0644',
-    require => File[$cfg_dir],
-  }
+  # Exhibitor manages the id and zookeeper config files
+  if $exhibitor_managed == false {
 
-  file { "${datastore}/myid":
-    ensure  => 'link',
-    target  => "${cfg_dir}/myid",
-    require => File["${cfg_dir}/myid"]
-  }
+    # we should notify Class['::zookeeper::service'] however it's not configured
+    # at this point (first run), so we have to subscribe from service declaration
+    file { "${cfg_dir}/myid":
+      ensure  => file,
+      content => template('zookeeper/conf/myid.erb'),
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      require => File[$cfg_dir],
+    }
 
-  file { "${cfg_dir}/zoo.cfg":
-    owner   => $user,
-    group   => $group,
-    mode    => '0644',
-    content => template('zookeeper/conf/zoo.cfg.erb'),
+    file { "${datastore}/myid":
+      ensure  => 'link',
+      target  => "${cfg_dir}/myid",
+      require => File["${cfg_dir}/myid"]
+    }
+
+    file { "${cfg_dir}/zoo.cfg":
+      owner   => $user,
+      group   => $group,
+      mode    => '0644',
+      content => template('zookeeper/conf/zoo.cfg.erb'),
+    }
   }
 
   file { "${cfg_dir}/environment":

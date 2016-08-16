@@ -98,6 +98,21 @@ describe 'zookeeper', :type => :class do
     it { should_not contain_class('zookeeper::service') }
   end
 
+  context 'enable exhibitor management' do
+    let(:user) { 'zookeeper' }
+    let(:group) { 'zookeeper' }
+
+    let(:params) do
+      {
+      :exhibitor_managed => true,
+    }
+    end
+
+    it { should contain_package('zookeeper').with({:ensure => 'present'}) }
+    it { should_not contain_service('zookeeper').with({:ensure => 'running'}) }
+    it { should_not contain_class('zookeeper::service') }
+  end
+
   context 'use Cloudera RPM repo' do
     let(:facts) do
       {

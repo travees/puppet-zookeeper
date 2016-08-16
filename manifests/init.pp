@@ -59,6 +59,7 @@ class zookeeper(
   $service_provider        = $::zookeeper::params::service_provider,
   $manage_service          = true,
   $manage_service_file     = false,
+  $exhibitor_managed       = false,
   $packages                = $::zookeeper::params::packages,
   $cdhver                  = undef,
   $install_java            = false,
@@ -77,6 +78,7 @@ class zookeeper(
   validate_array($packages)
   validate_bool($ensure_cron)
   validate_bool($manage_service)
+  validate_bool($exhibitor_managed)
   validate_bool($install_java)
   validate_bool($initialize_datastore)
 
@@ -154,6 +156,7 @@ class zookeeper(
     tracefile_threshold     => $tracefile_threshold,
     max_allowed_connections => $max_allowed_connections,
     peer_type               => $peer_type,
+    exhibitor_managed       => $exhibitor_managed,
     min_session_timeout     => $min_session_timeout,
     max_session_timeout     => $max_session_timeout,
     use_sasl_auth           => $use_sasl_auth,
@@ -169,7 +172,8 @@ class zookeeper(
     }
   }
 
-  if ($manage_service) {
+  # Don't install init scripts or manage service if exhibitor is enabled
+  if ($manage_service and !$exhibitor_managed) {
     class { 'zookeeper::service':
       cfg_dir             => $cfg_dir,
       zoo_dir             => $zoo_dir,

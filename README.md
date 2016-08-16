@@ -163,6 +163,7 @@ After=network-online.target
    - `install_method` (default: `package`) - installation method (either `package` or `archive`). `package` will use the available package manager. `archive` will install from an archive file.
    - `mirror_url` - Base URL of Apache mirror to use if `install_method` is `archive`
    - `archive_checksum` - optional hash to use when verifying installation archive. ex: `{ type => 'sha1', hash => 'abcdef123456' }`
+   - `exhibitor_managed` - (boolean) use exhibitor to manage the zookeeper process (https://github.com/Netflix/exhibitor/wiki)
 
 and many others, see the `init.pp` file for more details.
 
