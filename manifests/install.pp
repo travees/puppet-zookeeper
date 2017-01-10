@@ -64,6 +64,15 @@ class zookeeper::install {
     }
   }
 
+  # Helper script for zookeeper::znode
+  file { '/usr/local/bin/znode_exists.sh':
+    ensure => file,
+    owner  => 'root',
+    group  => 'root',
+    mode   => '0755',
+    source => 'puppet:///modules/zookeeper/znode_exists.sh',
+  }
+
   anchor { 'zookeeper::install::end': }
 
   # Post installation tasks

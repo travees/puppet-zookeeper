@@ -177,6 +177,20 @@ class { 'zookeeper':
   packages => ['zookeeper', 'zookeeper-java']
 }
 ```
+##  Znodes
+
+Znodes can be created or deleted with the `zookeeper::znode` defined type.
+
+
+```
+zookeeper::znode { '/znode_path':
+  ensure      => # 'present' or 'absent'
+  association => # data to associate with znode
+}
+```
+
+The resource title must begin with a slash
+
 ## Logging
 
 ZooKeeper uses log4j, following variables can be configured:

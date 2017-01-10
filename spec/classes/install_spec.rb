@@ -324,6 +324,30 @@ describe 'zookeeper::install' do
     end
   end
 
+  context 'create znode helper script' do
+    let(:facts) do
+      {
+        :operatingsystem => 'Ubuntu',
+        :osfamily => 'Debian',
+        :lsbdistcodename => 'trusty',
+        :operatingsystemmajrelease => '14.04',
+      }
+    end
+
+    let :pre_condition do
+      'class {"zookeeper": }'
+    end
+
+    it do
+      should contain_file('/usr/local/bin/znode_exists.sh').with(
+        :ensure => 'file',
+        :owner  => 'root',
+        :group  => 'root',
+        :mode   => '0755',
+      )
+    end
+  end
+
   context 'installing from tar archive' do
     let(:install_dir) { '/opt' }
     let(:zoo_dir) { '/opt/zookeeper' }
